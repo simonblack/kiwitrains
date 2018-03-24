@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+"""
+    Kiwiland Railroad Transit library.
+
+    This module provides a TransitMap object for the querying and 
+    manipulation of train route data for use at Kiwiland Railroads
+
+"""
+
+
 class TransitMap(dict):
     """
     An adjacency map-type object for interacting with train routes.
@@ -105,6 +115,44 @@ class TransitMap(dict):
             
         return visited, chain
     
+    def _shortest_path(self, start, end):
+        """
+        Find the shortest path between two nodes.
+        
+        Args:
+            start (str): The root node.
+            end (str): The terminal node.
+
+        Returns:
+            (tuple): A tuple containing:
+            
+                dist (int): The distance of the shortest path.
+                path (list): A list containing the path of the shortest path.
+        
+        """
+        visited, chain = self.__dijkstra(start)
+        path = [end]
+        
+        try:
+            dist = visited[end]
+        except KeyError:
+            return "NO SUCH ROUTE"
+        
+        # If matching a path that starts and ends with the same node,
+        # process the first node outside of the loop in order to 
+        # to avoid ending the loop before buiding a complete path.
+        if end == start:
+            end = chain[end]
+            path.append(end)
+        
+        while end != start:
+            end = chain[end]
+            path.append(end)
+            
+        path.reverse()
+    
+        return dist, path
+    
     def count_trips_by_distance(self, start, end, min_length=0, max_length=20):
         """
         Find all trips between two stops within a specified distance.
@@ -121,6 +169,9 @@ class TransitMap(dict):
             count (int): The total number of trips.
 
         """
+        return len(
+            self.find_trips_by_distance(start, end, min_length, max_length)
+        )
 
 
     def count_trips_by_stops(self, start, end, min_stops=1, max_stops=10):
@@ -139,7 +190,9 @@ class TransitMap(dict):
             count (int): The total number of trips.
         
         """
-
+        return len(
+            self.find_trips_by_stops(start, end, min_stops, max_stops)
+        )
 
     def find_trips_by_distance(self, start, end, min_length=0, max_length=20):
         """
@@ -157,7 +210,15 @@ class TransitMap(dict):
             trips (list): A list of trips.
 
         """
+        trips = []
+        paths = self.find_trips_by_stops(start,end)
 
+        for path in paths:
+            length = self.trip_distance(path)
+            if min_length < length < max_length:
+                trips.append(path)
+
+        return trips
 
     def find_trips_by_stops(self, start, end, min_stops=1, max_stops=10):
         """
@@ -175,16 +236,49 @@ class TransitMap(dict):
             trips (list): A list of trips.
         
         """
-
+        # min/max search depths are equal to min/max stops + 1 because trip
+        # stop counts do not include the root node
+        min_depth = min_stops + 1
+        max_depth = max_stops + 1
+        
+        trips = self.__bfs(start, end, min_depth, max_depth)
+        return trips
 
     def shortest_trip(self, start, end):
         """
         Find the shortest trip between two stopss.
         
+        Args:
+            start (str): The trip origin.
+            end (str): The final stop.
+        
+        Returns:
+            (int): Length of shortest route.
+        
         """
+        return self._shortest_path(start,end)[0]
         
     def trip_distance(self, path):
         """
         Calculate total trip distance.
 
+        Args:
+            path (list): A list of trips.
+
+        Returns:
+            distance (int): The total trip distance.
+
         """
+        trip = list(path)
+        try:
+            distance = 0
+            prev = trip.pop(0)
+            while trip:
+                stop = trip.pop(0)
+                distance += self[prev][stop]
+                prev = stop
+        
+        except KeyError:
+            return "NO SUCH ROUTE"
+
+        return distance
