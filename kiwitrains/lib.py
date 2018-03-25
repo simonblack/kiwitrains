@@ -41,7 +41,6 @@ class TransitMap(dict):
         
         Returns: 
             paths (list): A list of discovered paths.
-        
         """
         paths = []
         visited = []
@@ -82,7 +81,6 @@ class TransitMap(dict):
 
                 visited (dict): Distances from root node to other nodes.
                 chain (dict): A dict representation of the traversed path.
-            
         """
         visited = {start:0}
         queue = set(self.keys())
@@ -128,7 +126,6 @@ class TransitMap(dict):
             
                 dist (int): The distance of the shortest path.
                 path (list): A list containing the path of the shortest path.
-        
         """
         visited, chain = self.__dijkstra(start)
         path = [end]
@@ -167,7 +164,6 @@ class TransitMap(dict):
 
         Returns:
             count (int): The total number of trips.
-
         """
         return len(
             self.find_trips_by_distance(start, end, min_length, max_length)
@@ -188,7 +184,6 @@ class TransitMap(dict):
         
         Returns:
             count (int): The total number of trips.
-        
         """
         return len(
             self.find_trips_by_stops(start, end, min_stops, max_stops)
@@ -208,7 +203,6 @@ class TransitMap(dict):
 
         Returns:
             trips (list): A list of trips.
-
         """
         trips = []
         paths = self.find_trips_by_stops(start,end)
@@ -234,7 +228,6 @@ class TransitMap(dict):
         
         Returns:
             trips (list): A list of trips.
-        
         """
         # min/max search depths are equal to min/max stops + 1 because trip
         # stop counts do not include the root node
@@ -267,7 +260,6 @@ class TransitMap(dict):
 
         Returns:
             distance (int): The total trip distance.
-
         """
         trip = list(path)
         try:
