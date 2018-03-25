@@ -60,13 +60,15 @@ class TransitMap(dict):
             if node in visited:
                 if len(path) > max_depth:
                     continue
-            
-            for neighbour in self[node].keys():
-                _next = list(path)
-                _next.append(neighbour)
-                queue.append(_next)
-                visited.append(node)
-        
+            try:
+                for neighbour in self[node].keys():
+                    _next = list(path)
+                    _next.append(neighbour)
+                    queue.append(_next)
+                    visited.append(node)
+            except KeyError: # Inexistent node means path doesn't exist.
+                return "NO SUCH ROUTE"
+
         return paths
     
     def __dijkstra(self, start):
@@ -165,10 +167,12 @@ class TransitMap(dict):
         Returns:
             count (int): The total number of trips.
         """
-        return len(
-            self.find_trips_by_distance(start, end, min_length, max_length)
-        )
-
+        trips = self.find_trips_by_distance(start, end, min_length, max_length)
+        
+        if isinstance(trips, str):
+            return 0
+        else:
+            return len(trips)
 
     def count_trips_by_stops(self, start, end, min_stops=1, max_stops=10):
         """
@@ -185,9 +189,12 @@ class TransitMap(dict):
         Returns:
             count (int): The total number of trips.
         """
-        return len(
-            self.find_trips_by_stops(start, end, min_stops, max_stops)
-        )
+        trips = self.find_trips_by_stops(start, end, min_stops, max_stops)
+        
+        if isinstance(trips, str):
+            return 0
+        else:
+            return len(trips)
 
     def find_trips_by_distance(self, start, end, min_length=0, max_length=20):
         """
